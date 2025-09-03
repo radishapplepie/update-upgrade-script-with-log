@@ -2,6 +2,34 @@
 
 from datetime import datetime
 import subprocess
+import sys
+import select
+
+#variable holding seconds before the post uu confirmation is skipped
+timeout = 5
+
+#funtion controlling the confirm MAGIC
+def timed_input(prompt, timeout):
+	"""
+    Prompts the user for input with a specified timeout.
+
+    Args:
+        prompt (str): The message to display to the user.
+        timeout (int or float): The number of seconds to wait for input.
+
+    Returns:
+        str or None: The user's input string, or None if a timeout occurs.
+    """
+
+	print(prompt, end='')# Ensures the prompt is displayed immediately
+	sys.stdout.flush()
+	# Wait for input on stdin (sys.stdin) for 'timeout' seconds
+	ready, _, _ = select.select([sys.stdin], [], [], timeout)
+	
+	if ready:
+		return sys.stdin.readline().strip()
+	else:
+		return None
 
 #function to run update and confirm the outcome
 
@@ -28,8 +56,11 @@ def update():
 		with open(log_file, "a") as file:
 			file.write("\n")
 			file.write(str(update_fail_time))
-			
-	input("Press enter key to continue")
+	
+	#calling the funtion to provide a time limit for input before continuing automatically		
+	timed_input("Press enter key to continue\n", timeout)
+	#prints this either way regradless of input or bypass
+	print("continuing...\n")
 		
 #function to run upgrade and confirm the outcome
 		
@@ -59,7 +90,8 @@ def upgrade():
 			file.write("\n")
 			file.write(str(upgrade_fail_time))
 			
-	input("Press enter key to continue")
+	timed_input("Press enter key to continue\n", timeout)
+	print("continuing...\n")
 		
 #function for main menu and conditions
 
@@ -89,7 +121,7 @@ def chooseutype():
 			
 #define variable to contain the file name
 
-log_file = "log_file.txt"
+log_file = "uu.txt"
 			
 #catch the date that the application begins
 
